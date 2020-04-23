@@ -1,0 +1,59 @@
+YAML-formatted template Example
+
+Format Of template
+
+---
+Resources: 
+  MyInstance: 
+    Type: AWS::EC2::Instance
+    Metadata: 
+      AWS::CloudFormation::Init: 
+        config: 
+          packages: 
+            :
+          groups: 
+            :
+          users: 
+            :
+          sources: 
+            :
+          files: 
+            :
+          commands: 
+            :
+          services: 
+            :
+    Properties: 
+      :  
+
+
+
+
+Below Example:
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  Here are some
+  details about
+  the template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

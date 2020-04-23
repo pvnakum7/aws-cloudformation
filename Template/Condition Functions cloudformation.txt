@@ -1,0 +1,22 @@
+
+Condition Functions Cloudformation
+
+
+
+
+--You can use intrinsic functions, 
+such as,
+
+Fn::If
+
+Fn::Equals 
+
+Fn::Not
+
+Fn::And
+
+Fn::Or
+
+
+to conditionally create stack resources.
+

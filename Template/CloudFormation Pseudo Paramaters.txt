@@ -1,0 +1,21 @@
+CloudFormation Pseudo Paramaters
+
+--Pseudo Parameters are parameters in CloudFormation that can be referenced at any time in any stack.
+
+
+Examples:
+
+JSON
+
+"Outputs" : {
+   "MyStacksRegion" : { 
+   		"Value" : { "Ref" : "AWS::Region" } 
+   	}
+}
+
+
+YAML
+
+Outputs:
+  MyStacksRegion:
+    Value: !Ref "AWS::Region"

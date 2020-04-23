@@ -1,0 +1,52 @@
+Cloudformation Parameter template example
+
+
+-The following example declares a parameter named InstanceTypeParameter
+
+"Note that InstanceTypeParameter has a default value of t2.micro"
+
+
+Parameters: 
+  InstanceTypeParameter: 
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t2.micro
+      - m1.small
+      - m1.large
+    Description: Enter t2.micro, m1.small, or m1.large. Default is t2.micro
+
+
+
+
+    Examples:
+
+    Basic Input Parameters:
+	-Parameters section declares two parameters. 
+	The DBPort parameter is of type Number with a default of 3306. 
+	The minimum value :1150, 	maximum value : 65535
+	-AWS cloudformation describe-stacks
+	The minimum value :1, 	maximum value : 41
+Demo:
+
+	Parameters: 
+  DBPort: 
+    Default: 3306
+    Description: TCP/IP port for the database
+    Type: Number
+    MinValue: 1150
+    MaxValue: 65535
+  DBPwd: 
+    NoEcho: true
+    Description: The database admin account password
+    Type: String
+    MinLength: 1
+    MaxLength: 41
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+
+
+
+    
+
+

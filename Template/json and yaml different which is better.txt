@@ -1,0 +1,54 @@
+json and yaml different which is better
+
+
+
+********************************
+JSON better for api 
+
+
+
+
+
+
+********************************
+YAML is a superset of JSON, which means you can parse JSON with a YAML parser. Betcha didn’t know that!
+
+#############################
+one of the best advantage is 
+"YAML is that it supports comments". 
+##########################
+This is very useful especially when you use it for configuration.
+
+
+-YAML-based templates use less punctuation(विराम चिन्हन) and should be substantially easier to write and to read. 
+
+
+
+-It is far better suited for configuration than JSON
+
+-YAML has a couple of big advantages over JSON, including the ability to self reference, support for complex datatypes, embedded block literals, comments, and more.
+
+Example YAML File:
+
+
+{
+  "Parameters" : {
+    "KeyName" : {
+      "Description" : "The EC2 Key Pair to allow SSH access to the instance",
+      "Type" : "AWS::EC2::KeyPair::KeyName"
+    }
+  },
+  "Resources" : {
+    "Ec2Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "SecurityGroups" : [ "MyExistingSecurityGroup" ],
+        "KeyName" : { "Ref" : "KeyName"},
+        "ImageId" : "ami-6869aa05"
+      }
+    }
+  }
+}
+
+
+

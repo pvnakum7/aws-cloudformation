@@ -1,0 +1,84 @@
+YAML-formatted template Example
+
+
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  Here are some
+  details about
+  the template.
+
+
+-Metadata:
+
+	WebServer: 
+  Type: AWS::EC2::Instance 			#instance  
+  DependsOn: "BucketPolicy"
+  Metadata: 						#metadata part of EC2 
+    AWS::CloudFormation::Init: 		#metadata Init part 
+      config: 
+        packages: 
+          yum: 
+            httpd: []
+        files: 
+          /var/www/html/index.html: 
+            source: 
+              Fn::Join: 
+                - ""
+                - 
+                  - "http://s3.amazonaws.com/"
+                  - Ref: "BucketName"
+                  - "/index.html"
+            mode: "000400"
+            owner: "apache"
+            group: "apache"
+            authentication: "S3AccessCreds"
+        services: 
+          sysvinit: 
+            httpd: 
+              enabled: "true"
+              ensureRunning: "true"
+    AWS::CloudFormation::Authentication: 		#metadata Authentication part 
+      S3AccessCreds: 
+        type: "S3"
+        accessKeyId: 
+          Ref: "CfnKeys"
+        secretKey: 
+          Fn::GetAtt: 
+            - "CfnKeys"
+            - "SecretAccessKey"
+Properties: 
+  EC2 Resource Properties ...
+
+
+
+
+
+
+
+Resources: 
+  MyInstance: 
+    Type: AWS::EC2::Instance
+    Metadata: 
+      AWS::CloudFormation::Init: 
+        config: 
+          packages: 
+            :
+          groups: 
+            :
+          users: 
+            :
+          sources: 
+            :
+          files: 
+            :
+          commands: 
+            :
+          services: 
+            :
+    Properties: 
+      :  
+
+

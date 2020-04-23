@@ -1,0 +1,37 @@
+Cloudformation Resources template example
+
+
+-The required Resources section declares the AWS resources that you want to include in the stack, such as an Amazon EC2 instance or an Amazon S3 bucket.
+
+- It defines two resources. 
+- The MyInstance resource includes the MyQueue resource as part of its UserData property
+
+
+
+Examples:
+
+
+Resources: 
+  MyInstance: 
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      UserData: 
+        "Fn::Base64":
+          !Sub |
+            Queue=${MyQueue}
+      AvailabilityZone: "us-east-1a"
+      ImageId: "ami-0ff8a91507f77f867"
+  MyQueue: 
+    Type: "AWS::SQS::Queue"
+    Properties: {}
+
+
+    
+
+
+
+
+
+
+
+
