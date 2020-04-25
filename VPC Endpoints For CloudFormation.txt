@@ -1,0 +1,12 @@
+VPC Endpoints For CloudFormation
+
+
+- A VPC endpoint enable you to privately connect your VPC to supported AWS services and VPC endpoing services
+powered by PrivateLink
+without requiring an internet Gateway.
+NAT device, VPN Connection, AWS Direct Connect Connection.
+
+-Instance in your VPC do not require public ip addresses to communicate with resources n the service.
+
+-Traffic between your VPC and other sevice 
+does not leave the Amazon network.

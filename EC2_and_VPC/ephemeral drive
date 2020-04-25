@@ -1,0 +1,7 @@
+---
+
+
+# EC2 With Virtual drive (Ephemeral drive = Instance store volumes) for ephemeral drive check Ephemeral_drive.txt file
+
+
+AWSTemplateFormatVersion: ""

@@ -1,0 +1,19 @@
+
+Bootstrapping cloudformations
+
+
+--Bootstrapping is a repeatable process for getting
+an application up and running on an EC2 instance.
+
+*******************
+--And simply to say 
+*******************
+
+when you can create EC2 instance 
+then some install script use or enter in advance text box
+this process through the json bootstraping jsin file config. 
+
+
+--AWS CloudFormation allows you to define a set of resources needed to run an application in the form of a declarative JSON (JavaScript Object Notation) template.
+
+--The resources within the template can include Amazon EC2 instances, Elastic Load Balancers, and more

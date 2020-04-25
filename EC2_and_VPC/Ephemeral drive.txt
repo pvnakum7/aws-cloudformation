@@ -1,0 +1,4 @@
+
+Ephemeral drive
+
+Ephemeral: Instance store volumes also known as virtual devices have underlying hardware physically attached to the host computer for the instance. Instance store volumes support ephemeral [0-23]. Whenever you launch an EC2 instance, the instance store volume type is ephemeral by default.

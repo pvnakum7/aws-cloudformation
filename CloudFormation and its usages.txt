@@ -1,0 +1,108 @@
+CloudFormation
+ 
+ What, why , where cloudformation is require?
+
+--AWS CloudFormation is a service that helps you model
+and set up your Amazon Web Services resources so that 
+you can spend less time managing those resources and 
+more time focusing on your applications that run in AWS.
+
+
+--AWS CLoudformation enable you to manage your complate
+infrastructure or AWS resources through a trext file.
+
+
+****************************************
+CloudFormation features
+****************************************
+1.
+-Nested stacks
+	They allowed me to encapsulate logical areas of
+	functionality or usage within my templates and
+	make large or complex stacks more manageable
+
+					Stack
+					  |
+			------------------------	  
+			|						|
+			|						|
+			VPC						App	
+		-------------				---
+		|			|		  		|			
+		Az			Az				DB
+
+
+2.
+Lambda-backed custom resources	
+	-Lambda-backed custom resources allow me to
+	implement custom actions during template 
+	instantiation outside of those AWS resources that
+	are created for the stack itself.
+
+3.
+Change sets	
+	-Change sets allow you to see or inspect changes
+	that CloudFormation will make to your stack before 
+	actually applying them. This makes it much easier 
+	to make changes to CloudFormation templates and 
+	validate that what you intend to change as a 
+	result of the update is the only thing that is 
+	going to change.
+
+4.
+YAML
+
+
+
+
+
+5.
+A gateway to infrastructure as code
+
+	I use SQS and S3, EC2, RDS, Lambda, and SageMaker 
+	like everyone else. These are the services we all 
+	typically use to build our software and services 
+	on AWS. But when I want to “build” infrastructure 
+	on AWS, I always turn to CloudFormation
+
+
+
+
+
+
+
+
+*****************************************************
+
+ Limits and Restrictions
+
+Q: Are there limits to the number of templates or stacks?
+
+Ans:-There are no limits to the number of templates. 
+	Each AWS CloudFormation account is limited to a maximum of 200 stacks. Complete our request for a higher limit here, and we will respond to your request within two business days.
+
+Q: Are there limits to the size of description fields?
+
+Ans: Template, Parameter, Output, and Resource 
+	description fields are limited to 4096 characters.
+
+Q: Are there limits to the number of parameters or outputs in a template?
+
+Ans:-You can include up to 60 parameters and 60 
+	outputs in a template.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

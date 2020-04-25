@@ -1,0 +1,25 @@
+CloudFormation Guardrails
+
+
+-AWS refers to the tools and techniques used to
+Protect and monitors out stacks as guardrails.
+
+--Protect Our Stacks:
+	-termination protections
+	-Stack level policies
+	-Resources-level policies
+	-IAM policies
+
+--Monitoring our Stack
+	-Detecting drift: Tracking changes to stask resources
+			made outside of CloudFormation
+	-Dynamic Monitoring: Monitoring during the stack
+			Creation and stack updates(Rolback triggers)
+				
+	-Recording changes: Assess, Audit and evaluate 
+		Configurations(AWS Config)	
+		-recording config changes to clodformation stack
+		-Track current and historical stackconfig
+		-SNS notifications
+		-Maintain audit compliance and governance
+

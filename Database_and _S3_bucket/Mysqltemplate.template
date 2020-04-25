@@ -1,0 +1,39 @@
+---
+AWSTemplateFormatVersion: 2020-04-24
+Description: >-
+  AWS CloudFormation Sample Template DynamoDB_Secondary_Indexes: Create a
+  DynamoDB table with local and global secondary indexes. **WARNING** This
+  template creates an Amazon DynamoDB table. You will be billed for the AWS
+  resources used if you create a stack from this template.
+  
+Resources:
+    MyDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBSecurityGroups:
+      - Ref: MyDbSecurityByEC2SecurityGroup
+      #- Ref: MyDbSecurityByCIDRIPGroup
+      AllocatedStorage: '5'
+      DBInstanceClass: db.m1.small
+      Engine: MySQL
+      MasterUsername: MyName
+      MasterUserPassword: MyPassword
+    DeletionPolicy: Snapshot
+    MyDbSecurityByEC2SecurityGroup:
+      Type: AWS::RDS::DBSecurityGroup
+      Properties:
+        GroupDescription: Ingress for Amazon EC2 security group
+        #EC2VpcId:
+        #  Ref: MyVPC
+        DBSecurityGroupIngress:
+        - EC2SecurityGroupId: sg-0ccfee6cce011aa47
+          EC2SecurityGroupOwnerId: '557052107102'
+        - EC2SecurityGroupId: sg-0ccfee6cce011aa47
+          EC2SecurityGroupOwnerId: '557052107102'
+
+
+Outputs:
+  TableName:
+    Value: 
+      Ref: TableOfBooks
+    Description: Name of the newly created DynamoDB table

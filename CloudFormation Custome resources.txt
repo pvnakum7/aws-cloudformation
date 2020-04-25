@@ -1,0 +1,24 @@
+CloudFormation Custome resources
+
+
+Does not Support every resources in AWS
+But
+ Custome Resources are using Lambda Funstion Step:
+
+ 1.Coudformation retrives your packages source from S3
+ 2.Lambda RUN and RETURNS data to CF(Cloudformation).
+ 3.CF deployes other resources.
+
+
+
+
+ Lamdda fuction require three Utilities:
+
+ 1.Custome Resource(One Property-Service Token)
+ 2. Lambda Executions Role
+ 3. Lambda Functions(Either inline or a Zip file in S3)
+ 	A. Handler
+ 	B. Runtime
+ 	C. Role
+ 	D. Timeout
+

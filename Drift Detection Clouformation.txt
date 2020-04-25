@@ -1,0 +1,31 @@
+Drift Detection Clouformation
+
+
+
+QuestionS?
+IN short:
+-EC2 changes or EC2 Instance Type  changed directly
+-(Direct change without update template)
+
+1. Have you ever direct change your resouces without
+updateing template?
+
+2. Have you change your security group's ingress inthe 
+EC2 managemnet  console?
+
+3.Have you changed an Instance type directly in 
+EC2 rather than in CludFormaton?
+
+
+
+yes we can changed. But How?
+
+
+-You can detect drift on your stack from the managemnet 
+consol, the CLI or from CODE.
+
+-Yopu can detect drift on an entiure stack or a single resources in the stack
+
+-you then have the information necessary to update the template or to bring the resorce back nto comliances as approciate.
+
+

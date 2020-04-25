@@ -1,0 +1,14 @@
+EC2 CloudFormation template 
+
+
+
+Example:
+
+
+---
+AWSTemplateFormatVersion: "2020-04-23"
+Description: A Simple EC2 instnce templat example
+Reslources:
+    My
+
+

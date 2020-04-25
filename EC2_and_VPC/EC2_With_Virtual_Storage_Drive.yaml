@@ -1,0 +1,19 @@
+---
+
+#EC2 CloudFormation template 
+# EC2 With Virtual drive (Ephemeral drive = Instance store volumes) for ephemeral drive check Ephemeral_drive.txt file
+# --WARNING-- This template creates an Amazon EC2 instance using this template than will be billed for the Aws resources
+
+
+AWSTemplateFormatVersion: "2020-04-23"
+Description: "AWS CloudFormation Sample Template EC2_Instance_With_Ephemeral_Drives"
+Resources:
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      Keyname:
+        Ref: KeyName
+      InstanceType:
+        Ref: InstanceType
+      ImageID: "Fn::"    
+

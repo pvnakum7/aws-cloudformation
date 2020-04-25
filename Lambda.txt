@@ -1,0 +1,25 @@
+Lambda 
+
+ A fuly Managed compute platform,
+ Where you can run code without having to
+ provision servers
+ (AWS manages the server behind the screens.)
+
+ - You are not charged for any Hardware.
+ - You are Charged for how long your code runs
+ - Executes on AWS infrastructure 
+ -Event-driven -create a Lambda function and configure
+ it to responde to an event
+ 	(Such as uploading file to S3)
+ -Removes all infrastructure complaxity and responsibility.
+ 
+
+
+
+
+
+
+
+ SAM (ServerLess Application Model)
+ 	
+
