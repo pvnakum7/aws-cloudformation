@@ -1,0 +1,90 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+#   KeyName:
+#     Description : EC2 Key Pair for SSH Access
+#     Default : Paras123
+#     MinLength: 1
+#     MaxLength: 50
+
+  InstanceType:
+    Description : Instance1 EC2 instance type
+    Type : String
+    Default : m1.small
+    AllowedValues :
+      - t1.micro
+      - m1.small
+      - m1.medium 
+      - m1.large 
+      - t2.small     
+  #   ConstraintDescription : must be a valid EC2 instance type
+
+#Create VPC and 2 subnet
+
+Resources:
+  
+  PubPrivateVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  PublicSubnet1:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId:
+            Ref: PubPrivateVPC
+          AvailabilityZone: us-east-1a
+          CidrBlock: 10.0.1.0/24
+
+          MapPublicIpOnLaunch: true
+  PrivateSubnet1:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: 
+            Ref: PubPrivateVPC
+          AvailabilityZone: us-east-1a
+          CidrBlock: 10.0.2.0/24
+          MapPublicIpOnLaunch: false
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      Key
+      SecurityGroupIngress:
+      - CidrIp: 
+          Ref: PublicSubnet1
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      - CidrIp: 0.0.0.0/0
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80  
+         
+  # EC2SecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Limits security group egress traffic
+  #     SecurityGroupEgress:
+  #       Ref: SSHSecurityGroup
+  #     VpcId:
+  #       Ref: PubPrivateVPC
+        
+          
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: us-east-1a
+      ImageId: ami-a0cfeed8
+      InstanceType: 
+        Ref: InstanceType
+      SecurityGroup:
+        - Ref: SSHSecurityGroup
+      SubnetId: 
+        Ref: PublicSubnet1
+        
+            
+
+# Output:
+#   Type: EC2Instance
+#   Description: EC2 Instance create 

@@ -100,7 +100,7 @@ Resources:
     Ref: KeyName
    InstanceType: 
     Ref: InstanceType
-   ImageId: ami-068663a3c619dd892
+   ImageId: 
     "Fn::FindInMap": 
      - AWSRegionArch2AMI
      - Ref: "AWS::Region"

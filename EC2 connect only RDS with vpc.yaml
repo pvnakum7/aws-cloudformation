@@ -1,0 +1,130 @@
+
+---
+AWSTemplateFormatVersion: 2010-10-09
+
+Description:  This template deploys a VPC, with EC2 and RDS connection 
+
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+  PrivateSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.20.0/24
+
+
+#For Database
+  DBName:
+    Default:	drupaldb
+    Description:	The Drupal database name
+    Type:	String
+    MinLength:	1
+    MaxLength:	64
+    AllowedPattern:	[a-zA-Z][a-zA-Z0-9]*
+
+
+
+Resources:                      #For EC2 Instance  
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: us-east-1a
+      ImageId: ami-0ff8a91507f77f867
+
+#For database 
+  DBInstance:
+  Type: AWS::RDS::DBInstance
+  Properties:
+    DBName:
+      Ref: DBName
+    Engine: MySQL
+    MasterUsername:
+      Ref: DBUsername
+    DBInstanceClass:
+      Ref: DBClass
+    DBSecurityGroups:
+    - Ref: DBSecurityGroup
+    AllocatedStorage:
+      Ref: DBAllocatedStorage
+    MasterUserPassword:
+      Ref: DBPassword
+DBSecurityGroup:
+  Type: AWS::RDS::DBSecurityGroup
+  Properties:
+    DBSecurityGroupIngress:
+      EC2SecurityGroupName:
+        Ref: WebServerSecurityGroup
+    GroupDescription: Frontend Access
+WebServerSecurityGroup:
+  Type: AWS::EC2::SecurityGroup
+  Properties:
+    GroupDescription: Enable HTTP access via port 80 and SSH access
+    SecurityGroupIngress:
+    - IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+    - IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 0.0.0.0/0
+
+
+
+
+
+    
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName        
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
+  NoIngressSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "no-ingress-sg"
+      GroupDescription: "Security group with no ingress rule"
+      VpcId: !Ref VPC
+  
+
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+  PrivateSubnet1:
+    Description: A reference to the private subnet in the 1st Availability Zone
+    Value: !Ref PrivateSubnet1
+
+  NoIngressSecurityGroup:
+    Description: Security group with no ingress rule
+    Value: !Ref NoIngressSecurityGroup    
+
+    
+
+
+
+
