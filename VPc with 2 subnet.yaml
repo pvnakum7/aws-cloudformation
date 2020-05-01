@@ -15,7 +15,7 @@ Parameters:
     AllowedValues :
       - t1.micro
       - m1.small
-      - m1.medium
+      - m1.medium 
       - m1.large      
     ConstraintDescription : must be a valid EC2 instance type
 
@@ -77,6 +77,6 @@ Resources:
         Ref: PublicSubnet1
             
 
-# Output:
-#   Type: EC2Instance
-#   Description: EC2 Instance create 
+Output:
+  Type: EC2Instance
+  Description: EC2 Instance create 

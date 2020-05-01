@@ -13,11 +13,8 @@ Parameters:
     Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
     Type: String
     Default: 10.192.20.0/24
-
-
-#For Database
   DBName:
-    Default:	drupaldb
+    Default:	parasdb
     Description:	The Drupal database name
     Type:	String
     MinLength:	1
