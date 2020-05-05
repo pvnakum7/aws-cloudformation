@@ -199,6 +199,8 @@ Resources:
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
+      EnableDnsHostnames : true
+      EnableDnsSupport : true
       CidrBlock: !Ref VpcCidrParam
       Tags:
         - Key: Name
@@ -532,6 +534,8 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       
 
+
+
 ############################ Start Total 6  Public and Private Subnets NAT Gateway ###########################################
   # #public and Private Subnets - NAT Gateways
   ## First A Availability Zones 
@@ -549,7 +553,6 @@ Resources:
       AllocationId: !GetAtt AZANatGatewayEIP.AllocationId
       SubnetId: 
         - Ref: PublicAzASubnet
-
 
   # Second  B Availability Zone
   AZBNatGatewayEIP:
@@ -598,6 +601,8 @@ Resources:
       AllocationId: !GetAtt AZDNatGatewayEIP.AllocationId
       SubnetId:
         - Ref: PublicAzDSubnet
+              
+        
 
   # 5th  E Availability Zone
   AZENatGatewayEIP:
@@ -695,20 +700,19 @@ Resources:
         Ref: DBUsername
       MasterUserPassword: 
         Ref: DBPassword
-      # DependsOn:
-      #   - DbSubnetGroup    
+      AllocatedStorage: 
+        Ref: DBAllocatedStorage  
+         
       DBSubnetGroupName:
         Ref: DbSubnetGroup  
-      # SubnetId: 
-      #   - Ref: PrivateAzBSubnet
-      #   - Ref: PublicAzASubnet
+      # DependsOn:
+      #   - DbSubnetGroup 
 
-      VPCSecurityGroups:
+      VPCSecurityGroups:          # Note:this always use for Database security group (Cannot use DBSecurity Group)
       - Ref: DBSecurityGroup
-      # DBSecurityGroups:
+      # DBSecurityGroups:         #NOte:  this group does not work for Database security use VPC security Group
       #   - Ref: DBSecurityGroup
-      AllocatedStorage: 
-        Ref: DBAllocatedStorage
+      
   DbSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -722,6 +726,14 @@ Resources:
         - Ref: PublicAzBSubnet
         - Ref: PublicAzASubnet
         - Ref: PrivateAzBSubnet
+        - Ref: PrivateAzCSubnet
+        - Ref: PublicAzCSubnet
+        - Ref: PublicAzDSubnet
+        - Ref: PrivateAzDSubnet
+        - Ref: PrivateAzESubnet
+        - Ref: PublicAzESubnet
+        - Ref: PublicAzFSubnet
+        - Ref: PrivateAzFSubnet
         
       Tags:
         - Key: Name
@@ -734,6 +746,15 @@ Resources:
       GroupDescription: Instance to RDS Access
       VpcId:
         Ref: Vpc
+      SecurityGroupIngress:        
+        - CidrIp: 0.0.0.0/0
+          FromPort: 3306
+          ToPort: 3306
+          IpProtocol: tcp
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22  
       Tags:
       - Key: Name
         Value:
@@ -742,17 +763,16 @@ Resources:
           - - Ref: AWS::StackName
             - "-rds"
       
-  AccessSecurityGroupIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: DBSecurityGroup
-    Properties:
-      GroupId:
-        Ref: DBSecurityGroup
-      IpProtocol: tcp
-      FromPort: '3306'
-      ToPort: '3306'
-      # SourceSecurityGroupId:
-      #   - Ref: DBSecurityGroup
+  # AccessSecurityGroupIngress:
+  #   Type: AWS::EC2::SecurityGroupIngress
+  #   DependsOn: DBSecurityGroup
+  #   Properties:
+  #     GroupId:
+  #       Ref: DBSecurityGroup
+  #     IpProtocol: tcp
+  #     FromPort: '3306'
+  #     ToPort: '3306'
+      
         
   # DBSecurityGroup:
   #   Type: 'AWS::RDS::DBSecurityGroup'
@@ -788,14 +808,31 @@ Resources:
         Fn::Base64:                                
           !Sub |
               #!/bin/bash -ex
-              yum install -y httpd;
+              #this all command for Ubuntu OS
+              apt install apache2 -y
+              rm -rf /var/www/html/index.html
+              apt install mysql-client-core-8.0
+              
               # link=!Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [DBInstance, Endpoint.Port], /, !Ref 'DBName']]
-              echo "<html>link Work or not</html>" > /var/www/html/index.html;
-              cd /var/www/html;
-              chmod 755 index.html;
-              service httpd start;
-              chkconfig httpd on;  
-      
+              echo "DB_CONNECTION=${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
+              echo link1="${DBInstance.Endpoint.Address}" > /var/www/html/logs1.txt
+
+              echo "Hello DBInstance, ${DBInstance.Endpoint.Address}" > /var/www/html/logsDB.txt
+
+              echo "Hello, ${DBInstance.Endpoint.Address}" > /var/www/html/logsRDS.txt
+
+              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2> Work or not</h2> </html>" > /var/www/html/index.html
+              cd /var/www/html
+              chmod 755 index.html
+              service apache2 restart
+              service apache2 status active
+              
+             
+             ###########This below Comand for Linux
+              # systemctl status apache2
+              # chkconfig httpd on;    #this command for Linux
+              # chkconfig apache2 on
+       
       KeyName:
         Ref: KeyName
       ImageId : ami-068663a3c619dd892
@@ -853,11 +890,20 @@ Outputs:
           - EC2Instance
           - PublicDnsName
     Description: Paras Website
+  
+  
 
-  JDBCConnectionString:
-    Description: JDBC connection string for the database
-    Value: !Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [
-          DBInstance, Endpoint.Port], /, !Ref 'DBName']]
+  # JDBCConnectionString:
+  #   Description: JDBC connection string for the database
+  #   Value: !Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [
+  #         DBInstance, Endpoint.Port], /, !Ref 'DBName']]
+  DatabaseEndpoint: 
+        Description: The database endpoint
+        Value: !GetAtt DBInstance.Endpoint.Address
+    
+  DatabasePort:
+        Description: The database port
+        Value: !GetAtt DBInstance.Endpoint.Port
 
   VpcId:
     Description: VPC Id
