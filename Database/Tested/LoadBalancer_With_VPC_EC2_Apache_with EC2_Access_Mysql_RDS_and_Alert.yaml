@@ -795,39 +795,69 @@ Resources:
           SubnetId:
             Ref: PublicAzASubnet
       Tenancy: default
-      UserData: !Base64 
-        'Fn::Join':
-          - ''
-          - - |
-              #!/bin/bash -v
-              - |
+      UserData:
+        Fn::Base64:                                
+          !Sub |
+              #!/bin/bash -ex
+              #this all command for Ubuntu OS
               apt install apache2 -y
-              - |
               rm -rf /var/www/html/index.html
-              - |
               apt install mysql-client-core-8.0
-              - |
-              echo "${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
               
-              - |
-              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2>$link2   Work or not</h2> </html>" > /var/www/html/index.html
-              - |
+              # link=!Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [DBInstance, Endpoint.Port], /, !Ref 'DBName']]
+              echo "DB_CONNECTION=${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
+              echo link1="${DBInstance.Endpoint.Address}" > /var/www/html/logs1.txt
+
+              echo "Hello DBInstance, ${DBInstance.Endpoint.Address}" > /var/www/html/logsDB.txt
+
+              echo "Hello, ${DBInstance.Endpoint.Address}" > /var/www/html/logsRDS.txt
+
+              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2> Work or not</h2> </html>" > /var/www/html/index.html
               cd /var/www/html
-              - |
               chmod 755 index.html
-              - |
               service apache2 restart
-              - |
               service apache2 status active
               
+             
+             ###########This below Comand for Linux
+              # systemctl status apache2
+              # chkconfig httpd on;    #this command for Linux
+              # chkconfig apache2 on
+
+      #Another Way to Install Apache        
+      # UserData: !Base64 
+      #   'Fn::Join':
+      #     - ''
+      #     - - |
+      #         #!/bin/bash -v
+      #         - |
+      #         apt install apache2 -y
+      #         - |
+      #         rm -rf /var/www/html/index.html
+      #         - |
+      #         apt install mysql-client-core-8.0
+      #         - |
+      #         echo "${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
               
-              # yum install httpd
-              # - |
-              # echo Hello
-              # - |
-              # echo Hello > /var/www/html/index.html
-              # - |
-              # systemctl httpd restart       
+      #         - |
+      #         echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2>$link2   Work or not</h2> </html>" > /var/www/html/index.html
+      #         - |
+      #         cd /var/www/html
+      #         - |
+      #         chmod 755 index.html
+      #         - |
+      #         service apache2 restart
+      #         - |
+      #         service apache2 status active
+              
+              
+      #         # yum install httpd
+      #         # - |
+      #         # echo Hello
+      #         # - |
+      #         # echo Hello > /var/www/html/index.html
+      #         # - |
+      #         # systemctl httpd restart       
       
 
   InstanceSecurityGroup:
