@@ -1,6 +1,7 @@
 ---
 AWSTemplateFormatVersion: 2010-09-09
-##### VPC with Private public zone and EC2 with public and RDS with EC2.
+##### VPC with multiple zone and EC2 with public and RDS only connect EC2 
+#### All trafic through LoadBalancer
 Description: >
   Creates a VPC with public and private subnets for a given AWS Account and Database 
     
@@ -795,28 +796,28 @@ Resources:
           SubnetId:
             Ref: PublicAzASubnet
       Tenancy: default
-      UserData:
-        Fn::Base64:                                
-          !Sub |
-              #!/bin/bash -ex
-              #this all command for Ubuntu OS
-              apt install apache2 -y
-              rm -rf /var/www/html/index.html
-              apt install mysql-client-core-8.0
+      # UserData:
+      #   Fn::Base64:                                
+      #     !Sub |
+      #         #!/bin/bash -ex
+      #         #this all command for Ubuntu OS
+      #         apt install apache2 -y
+      #         rm -rf /var/www/html/index.html
+      #         apt install mysql-client-core-8.0
               
-              # link=!Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [DBInstance, Endpoint.Port], /, !Ref 'DBName']]
-              echo "DB_CONNECTION=${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
-              echo link1="${DBInstance.Endpoint.Address}" > /var/www/html/logs1.txt
+      #         # link=!Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [DBInstance, Endpoint.Port], /, !Ref 'DBName']]
+      #         echo "DB_CONNECTION=${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
+      #         echo link1="${DBInstance.Endpoint.Address}" > /var/www/html/logs1.txt
 
-              echo "Hello DBInstance, ${DBInstance.Endpoint.Address}" > /var/www/html/logsDB.txt
+      #         echo "Hello DBInstance, ${DBInstance.Endpoint.Address}" > /var/www/html/logsDB.txt
 
-              echo "Hello, ${DBInstance.Endpoint.Address}" > /var/www/html/logsRDS.txt
+      #         echo "Hello, ${DBInstance.Endpoint.Address}" > /var/www/html/logsRDS.txt
 
-              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2> Work or not</h2> </html>" > /var/www/html/index.html
-              cd /var/www/html
-              chmod 755 index.html
-              service apache2 restart
-              service apache2 status active
+      #         echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2> Work or not</h2> </html>" > /var/www/html/index.html
+      #         cd /var/www/html
+      #         chmod 755 index.html
+      #         service apache2 restart
+      #         service apache2 status active
               
              
              ###########This below Comand for Linux
@@ -825,39 +826,39 @@ Resources:
               # chkconfig apache2 on
 
       #Another Way to Install Apache        
-      # UserData: !Base64 
-      #   'Fn::Join':
-      #     - ''
-      #     - - |
-      #         #!/bin/bash -v
-      #         - |
-      #         apt install apache2 -y
-      #         - |
-      #         rm -rf /var/www/html/index.html
-      #         - |
-      #         apt install mysql-client-core-8.0
-      #         - |
-      #         echo "${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -v
+              - |
+              apt install apache2 -y
+              # - |
+              # rm -rf /var/www/html/index.html
+              # - |
+              # apt install mysql-client-core-8.0
+              - |
+              echo "${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
               
-      #         - |
-      #         echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2>$link2   Work or not</h2> </html>" > /var/www/html/index.html
-      #         - |
-      #         cd /var/www/html
-      #         - |
-      #         chmod 755 index.html
-      #         - |
-      #         service apache2 restart
-      #         - |
-      #         service apache2 status active
+              - |
+              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>   </html>" > /var/www/html/index2.html
+              - |
+              cd /var/www/html
+              - |
+              chmod 755 index2.html
+              - |
+              service apache2 restart
+              - |
+              service apache2 status active
               
               
-      #         # yum install httpd
-      #         # - |
-      #         # echo Hello
-      #         # - |
-      #         # echo Hello > /var/www/html/index.html
-      #         # - |
-      #         # systemctl httpd restart       
+              # yum install httpd
+              # - |
+              # echo Hello
+              # - |
+              # echo Hello > /var/www/html/index.html
+              # - |
+              # systemctl httpd restart       
       
 
   InstanceSecurityGroup:

@@ -103,7 +103,7 @@ Resources:
             - chmod 755 index.html;
             
             - sudo /etc/init.d/httpd start
-            - link='http://'${!GetAtt[WebServerInstance,PublicDnsName] 
+            - link='http://'${!GetAtt[WebServerInstance,PublicDnsName]
           
             - echo "<html><body><h1>$link</h1>" > /var/www/html/index.html;
             

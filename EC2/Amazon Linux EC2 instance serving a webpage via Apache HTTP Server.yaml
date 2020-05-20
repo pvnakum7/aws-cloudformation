@@ -28,7 +28,7 @@ Resources:
     Type: AWS::EC2::Instance                     
     Properties:
       ImageId:
-        "Fn:: :                                 # This is an example of the short form YAML FindInMap function
+        Fn:: :                                 # This is an example of the short form YAML FindInMap function
           - AWSRegionToAMI                         # It accepts three parameters each denoted by a hyphen (-)
           - !Ref AWS::Region
           - AMIID
@@ -36,16 +36,41 @@ Resources:
       KeyName: !Ref KeyName
       SecurityGroupIds: !Ref SecurityGroupIDs
       SubnetId: !Ref SubnetID
+      # UserData:
+      #   Fn::Base64:                                # YAML makes userdata much cleaner
+      #     !Sub |
+      #         #!/bin/bash -ex
+      #         yum install -y httpd;
+      #         echo "<html>I love YAML CloudFormation!!</html>" > /var/www/html/index.html;
+      #         cd /var/www/html;
+      #         chmod 755 index.html;
+      #         service httpd start;
+      #         chkconfig httpd on;
       UserData:
-        Fn::Base64:                                # YAML makes userdata much cleaner
+        Fn::Base64:                                
           !Sub |
               #!/bin/bash -ex
-              yum install -y httpd;
-              echo "<html>I love YAML CloudFormation!!</html>" > /var/www/html/index.html;
-              cd /var/www/html;
-              chmod 755 index.html;
-              service httpd start;
-              chkconfig httpd on;
+              #this all command for Ubuntu OS
+              apt install apache2 -y
+              rm -rf /var/www/html/index.html
+              apt install mysql-client-core-8.0
+              
+              # link=!Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [DBInstance, Endpoint.Port], /, !Ref 'DBName']]
+              echo "DB_CONNECTION=${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
+              echo link1="${DBInstance.Endpoint.Address}" > /var/www/html/logs1.txt
+
+              echo "Hello DBInstance, ${DBInstance.Endpoint.Address}" > /var/www/html/logsDB.txt
+
+              echo "Hello, ${DBInstance.Endpoint.Address}" > /var/www/html/logsRDS.txt
+
+              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2> Work or not</h2> </html>" > /var/www/html/index.html
+              cd /var/www/html
+              chmod 755 index.html
+              service apache2 restart
+              service apache2 status active
+
+
+
       Tags:                                      # Tags are an example of a sequence of mappings in YAML,
         -                                        # each key/value pair is separated by a hyphen
           Key: Name

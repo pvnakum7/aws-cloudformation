@@ -659,17 +659,46 @@ Resources:
       - Ref: InstanceSecurityGroup
       SubnetId: 
         Ref: PublicAzASubnet       #Here Ref. subnet Group and Subnet Group Set Public or Private Subnet
+      # UserData:
+      #   Fn::Base64:                                
+      #     !Sub |
+      #         #!/bin/bash -ex
+      #         yum install -y httpd;
+      #         echo "<html>I love YAML CloudFormation!!</html>" > /var/www/html/index.html;
+      #         cd /var/www/html;
+      #         chmod 755 index.html;
+      #         service httpd start;
+      #         chkconfig httpd on;  
+           
       UserData:
-        Fn::Base64:                                
-          !Sub |
+        Fn::Base64:                      
+          Sub: |
               #!/bin/bash -ex
-              yum install -y httpd;
-              echo "<html>I love YAML CloudFormation!!</html>" > /var/www/html/index.html;
-              cd /var/www/html;
-              chmod 755 index.html;
-              service httpd start;
-              chkconfig httpd on;  
-      
+              #this all command for Ubuntu OS
+              apt install apache2 -y
+              rm -rf /var/www/html/index.html
+              apt install mysql-client-core-8.0
+              
+              # link=!Join ['', ['jdbc:mysql://', !GetAtt [DBInstance, Endpoint.Address], ':', !GetAtt [DBInstance, Endpoint.Port], /, !Ref 'DBName']]
+              # lan1="jdbc:mysql://"
+              # echo "DB_CONNECTION=${DBInstance.Endpoint.Address}" >> /var/www/html/logs1.txt
+              
+              echo "$link1" >> /var/www/html/logsDB.txt
+
+              echo "$link2"=> /var/www/html/logsDB.txt
+              Export "$link3"=> /var/www/html/logsDB.txt
+              # echo "Hello DBInstance, jdbc:mysql://${DBInstance.Endpoint.Address"".$DBInstance.Endpoint.Address"":$DBInstance.Endpoint.Port""/$DBName"  > /var/www/html/logs1.txt
+
+              # echo link2="Hello DBInstance, jdbc//:mysql://${DBInstance.Endpoint.Address"".$DBInstance.Endpoint.Address"":$DBInstance.Endpoint.Port""/$DBName"  > /var/www/html/logsDB.txt
+
+              # echo "jdbc:mysql//://${DBInstance.Endpoint.Address." > /var/www/html/logsRDS.txt
+
+              echo "<html><h1>${DBInstance.Endpoint.Address}</h1>  <h2>$link2   Work or not</h2> </html>" > /var/www/html/index.html
+              cd /var/www/html
+              chmod 755 index.html
+              service apache2 restart
+              service apache2 status active        
+
       KeyName:
         Ref: KeyName
       ImageId : ami-068663a3c619dd892
