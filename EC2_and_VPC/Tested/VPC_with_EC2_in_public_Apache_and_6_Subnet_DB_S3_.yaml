@@ -502,7 +502,7 @@ Resources:
       AllocationId: !GetAtt AZANatGatewayEIP.AllocationId
       SubnetId: 
         - Ref: PublicAzASubnet
-        - Ref: PrivateAzASubnet
+        
 
 
   # Second  B Availability Zone
@@ -520,7 +520,7 @@ Resources:
       AllocationId: !GetAtt AZBNatGatewayEIP.AllocationId
       SubnetId:
       - Ref: PublicAzBSubnet
-      - Ref: PrivateAzBSubnet
+      
 
   # Third  C Availability Zone
   AZCNatGatewayEIP:
@@ -537,7 +537,7 @@ Resources:
       AllocationId: !GetAtt AZCNatGatewayEIP.AllocationId
       SubnetId:
         - Ref: PublicAzCSubnet
-        - Ref: PrivateAzCSubnet
+        
 
   # 4th D Availability Zone
   AZDNatGatewayEIP:
@@ -555,13 +555,6 @@ Resources:
       SubnetId:
         - Ref: PublicAzDSubnet
         
-  AZDNatGatewayPrivate:
-    Type: AWS::EC2::NatGateway
-    Condition: HighlyAvailable
-    Properties:
-      AllocationId: !GetAtt AZDNatGatewayEIP.AllocationId
-      SubnetId:
-        - Ref: PrivateAzDSubnet
               
         
 
@@ -580,7 +573,7 @@ Resources:
       AllocationId: !GetAtt AZENatGatewayEIP.AllocationId
       SubnetId: 
         - Ref: PublicAzESubnet
-        - Ref: PrivateAzESubnet
+        
 
   # 6th  F Availability Zone
   AZFNatGatewayEIP:
@@ -598,7 +591,7 @@ Resources:
         GetAtt: AZFNatGatewayEIP.AllocationId
       SubnetId: 
         - Ref: PublicAzFSubnet
-        - Ref: PrivateAzFSubnet
+        
 
 
   # NotHighlyAvailablePrivateAzCRoute:
