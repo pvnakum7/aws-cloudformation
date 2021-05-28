@@ -1,0 +1,652 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::SecretsManager-2020-07-23
+Description: "This is an example template with Auto-Scaling-ALB-EC2-RDS-resources"
+
+Mappings:
+  RegionMap:
+    af-south-1:
+      AMI: ami-064cc455f8a1ef504   
+    ap-east-1:
+      AMI: ami-f85b1989
+    ap-northeast-1:
+      AMI: ami-0b2c2a754d5b4da22
+    ap-northeast-2:
+      AMI: ami-0493ab99920f410fc
+    ap-northeast-3:
+      AMI: ami-01344f6f63a4decc1
+    ap-south-1:
+      AMI: ami-03cfb5e1fb4fac428
+    ap-southeast-1:
+      AMI: ami-0ba35dc9caf73d1c7
+    ap-southeast-2:
+      AMI: ami-0ae99b503e8694028
+    ca-central-1:
+      AMI: ami-0803e21a2ec22f953
+    cn-north-1:
+      AMI: ami-07a3f215cc90c889c
+    cn-northwest-1:
+      AMI: ami-0a3b3b10f714a0ff4
+    eu-central-1:
+      AMI: ami-0474863011a7d1541
+    eu-north-1:
+      AMI: ami-0de4b8910494dba0f
+    eu-south-1:
+      AMI: ami-08427144fe9ebdef6
+    eu-west-1:
+      AMI: ami-015232c01a82b847b
+    eu-west-2:
+      AMI: ami-0765d48d7e15beb93
+    eu-west-3:
+      AMI: ami-0caf07637eda19d9c
+    me-south-1:
+      AMI: ami-0744743d80915b497
+    sa-east-1:
+      AMI: ami-0a52e8a6018e92bb0
+    us-east-1:
+      AMI: ami-032930428bf1abbff
+    us-east-2:
+      AMI: ami-027cab9a7bf0155df
+    us-west-1:
+      AMI: ami-088c153f74339f34c
+    us-west-2:
+      AMI: ami-01fee56b22f308154
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: "Development"
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.192.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.10.0/24
+
+  PublicSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 10.192.11.0/24
+
+  PrivateSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.20.0/24
+
+  PrivateSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
+    Type: String
+    Default: 10.192.21.0/24
+  
+  MasterUserPassword:
+    Description: Please enter master username for database
+    Type: String
+  
+  MasterUsername:
+    Description: Please enter master password for database
+    Type: String
+
+
+Resources:
+
+### VPC Starts
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 
+        Ref: VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: 
+            Ref: EnvironmentName
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: 
+        Ref: InternetGateway
+      VpcId: 
+        Ref: VPC
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: 
+        Ref: PublicSubnet1CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: 
+        Ref: PublicSubnet2CIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet (AZ2)
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet (AZ1)
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
+
+  NatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway2EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  NatGateway2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Routes (AZ1)
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Routes (AZ2)
+
+  DefaultPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway2
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref PrivateSubnet2
+
+### VPC Ends
+
+### Bastion Host Start
+
+  Ec2Instance: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !FindInMap [ RegionMap, !Ref 'AWS::Region', AMI ]
+      InstanceType: t3.micro
+      KeyName: my-keypair
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+      - Key: Name
+        Value: BastionHost
+      - Key: Creator
+        Value: pvnakum7
+      - Key: Region
+        Value: 
+          Ref: 'AWS::Region'
+      - Key: Environment
+        Value: Development
+
+### Bastion Host Ends
+
+### RDS Starts
+  MyDBSubnetGroup: 
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: "DB Subnet Group"
+      SubnetIds: 
+        - Ref: PublicSubnet1
+        - Ref: PublicSubnet2
+        - Ref: PrivateSubnet1
+        - Ref: PrivateSubnet2
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: mytestdb
+      Engine: MySQL
+      MasterUsername:
+        Ref: MasterUsername
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      MasterUserPassword:
+        Ref: MasterUserPassword
+      DBSubnetGroupName:
+        Ref: MyDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref WebServerSecurityGroup
+
+### RDS Ends
+
+### ALB ASG Starts
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: 
+        Ref: VPC
+      GroupDescription: Enable HTTP access via port 80 and SSH access
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '3306'
+        ToPort: '3306'
+        CidrIp: 0.0.0.0/0
+    
+
+  DeployAppLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          InstallAndRun:
+          - Install
+          - Configure
+        Install:
+          packages:
+            yum:
+              httpd: []
+              php: []
+              php-mysql: []
+          files:
+            "/var/www/html/index.php":
+              content:
+                Fn::Join:
+                - ''
+                - - "<html>\n"
+                  - "  <head>\n"
+                  - "    <title>AWS CloudFormation</title>\n"
+                  - '    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">'
+                  - "  </head>\n"
+                  - "  <body>\n"
+                  - "    <h1>Hello World!</h1>\n"
+                  - "    <p/>\n"
+                  - "    <?php\n"
+                  - "      // Print out the current data and time\n"
+                  - '      print "The Current Date and Time is: <br/>";'
+                  - '      print date("g:i A l, F j Y.");'
+                  - "    ?>\n"
+                  - "    <p/>\n"
+                  - "    <?php\n"
+                  - "      // Setup a handle for CURL\n"
+                  - "      $curl_handle=curl_init();\n"
+                  - "      curl_setopt($curl_handle,CURLOPT_CONNECTTIMEOUT,2);\n"
+                  - "      curl_setopt($curl_handle,CURLOPT_RETURNTRANSFER,1);\n"
+                  - "      // Get the hostname of the intance from the instance metadata\n"
+                  - "      curl_setopt($curl_handle,CURLOPT_URL,'http://169.254.169.254/latest/meta-data/public-hostname');\n"
+                  - "      $hostname = curl_exec($curl_handle);\n"
+                  - "      if (empty($hostname))\n"
+                  - "      {\n"
+                  - '        print "Sorry, for some reason, we got no hostname back
+                    <br />";'
+                  - "      }\n"
+                  - "      else\n"
+                  - "      {\n"
+                  - '        print "Server = " . $hostname . "<br />";'
+                  - "      }\n"
+                  - "      // Get the instance-id of the intance from the instance
+                    metadata\n"
+                  - "      curl_setopt($curl_handle,CURLOPT_URL,'http://169.254.169.254/latest/meta-data/instance-id');\n"
+                  - "      $instanceid = curl_exec($curl_handle);\n"
+                  - "      if (empty($instanceid))\n"
+                  - "      {\n"
+                  - '        print "Sorry, for some reason, we got no instance id
+                    back <br />";'
+                  - "      }\n"
+                  - "      else\n"
+                  - "      {\n"
+                  - '        print "EC2 instance-id = " . $instanceid . "<br />";'
+                  - "      }\n"
+                  - '      $Database   = "mydb'
+                  - "\";\n"
+                  - '      $DBUser     = "'
+                  - !Ref MasterUsername
+                  - "\";\n"
+                  - '      $DBPassword = "'
+                  - !Ref MasterUserPassword
+                  - "\";\n"
+                  - '      print "Database = " . $Database . "<br />";'
+                  - '      $dbconnection = mysql_connect("'
+                  - !GetAtt DBInstance.Endpoint.Address
+                  - '", $DBUser, $DBPassword,
+                    $Database) or die("Could not connect: " . mysql_error());'
+                  - '      print ("Connected to $Database successfully");'
+                  - "      mysql_close($dbconnection);\n"
+                  - "    ?>\n"
+                  - "    <h2>PHP Information</h2>\n"
+                  - "    <p/>\n"
+                  - "    <?php\n"
+                  - "      phpinfo();\n"
+                  - "    ?>\n"
+                  - "  </body>\n"
+                  - "</html>\n"
+              mode: '000600'
+              owner: apache
+              group: apache
+            "/etc/cfn/cfn-hup.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[main]\n"
+                  - stack=
+                  - Ref: AWS::StackId
+                  - "\n"
+                  - region=
+                  - Ref: AWS::Region
+                  - "\n"
+              mode: '000400'
+              owner: root
+              group: root
+            "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[cfn-auto-reloader-hook]\n"
+                  - 'triggers=post.update'
+                  - 'path=Resources.WebServerInstance.Metadata.AWS::CloudFormation::Init'
+                  - 'action=/opt/aws/bin/cfn-init -v '
+                  - "         --stack "
+                  - Ref: AWS::StackName
+                  - "         --resource WebServerInstance "
+                  - "         --configsets InstallAndRun "
+                  - "         --region "
+                  - Ref: AWS::Region
+                  - "\n"
+                  - 'runas=root'
+            "/tmp/setup.mysql":
+              content:
+                Fn::Join:
+                - ''
+                - - 'CREATE DATABASE mydb'
+                  - ";\n"
+              mode: '000400'
+              owner: root
+              group: root
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                - "/etc/cfn/cfn-hup.conf"
+                - "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+        Configure:
+          commands:
+            01_create_database:
+              command:
+                Fn::Join:
+                - ''
+                - - "mysql -u"
+                  - !Ref MasterUsername
+                  - "--password="
+                  - !Ref MasterUserPassword
+                  - "' < /tmp/setup.mysql"
+              test:
+                Fn::Join:
+                - ''
+                - - "$(mysql "
+                  - !Ref MasterUsername
+                  - " -u root --password='"
+                  - !Ref MasterUserPassword
+                  - "' >/dev/null 2>&1 </dev/null); (( $? != 0 ))"
+                  
+    Properties:
+      ImageId: !FindInMap [ RegionMap, !Ref 'AWS::Region', AMI ]
+      AssociatePublicIpAddress: true
+      InstanceType: t3.micro
+      KeyName: my-test-key
+      SecurityGroups:
+        - !Ref WebServerSecurityGroup
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -xe\n"
+            - 'yum install -y aws-cfn-bootstrap
+
+              '
+            - "# Install the files and packages from the metadata\n"
+            - "/opt/aws/bin/cfn-init -v "
+            - "         --stack "
+            - Ref: AWS::StackName
+            - "         --resource DeployAppLaunchConfig "
+            - "         --configsets InstallAndRun "
+            - "         --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "# Signal the status from cfn-init\n"
+            - "/opt/aws/bin/cfn-signal -e $? "
+            - "         --stack "
+            - Ref: AWS::StackName
+            - "         --resource DeployAppLaunchConfig "
+            - "         --region "
+            - Ref: AWS::Region
+            - "\n"
+            
+  DeployAppASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Ref: PrivateSubnet1
+        - Ref: PrivateSubnet2
+      DesiredCapacity: 3
+      LaunchConfigurationName: 
+        Ref: DeployAppLaunchConfig
+      TargetGroupARNs: [ !Ref WebAppTargetGroup ]
+      MaxSize: 3
+      MinSize: 3
+      Tags:
+        - Key: Name
+          Value: TestProject
+          PropagateAtLaunch: True
+        - Key: Creator
+          Value: pvnakum7
+          PropagateAtLaunch: True
+        - Key: Region
+          Value: 
+            Ref: 'AWS::Region'
+          PropagateAtLaunch: True
+        - Key: Environment
+          Value: Development
+          PropagateAtLaunch: True
+    UpdatePolicy:
+      AutoScalingReplacingUpdate:
+        WillReplace: True
+
+  ALBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: 
+        Ref: VPC
+      GroupDescription: Enable HTTP/HTTPS access
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: 'tcp'
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: TestProject
+        - Key: Creator
+          Value: pvnakum7
+        - Key: Region
+          Value: 
+            Ref: 'AWS::Region'
+        - Key: Environment
+          Value: Development
+
+  WebAppALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - Ref: ALBSecurityGroup
+      Subnets:
+        - Ref: PublicSubnet1
+        - Ref: PublicSubnet2
+      Type: application
+      Tags:
+        - Key: Name
+          Value: TestProject
+        - Key: Creator
+          Value: pvnakum7
+        - Key: Region
+          Value: 
+            Ref: 'AWS::Region'
+        - Key: Environment
+          Value: Development
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: WebAppTargetGroup
+      LoadBalancerArn:
+        Ref: WebAppALB
+      Port: '80'
+      Protocol: HTTP
+
+  WebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: '80'
+      Protocol: 'HTTP'
+      VpcId: 
+        Ref: VPC
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+
+### ALB ASG Ends
+
+Outputs:
+  ALBDNS:
+    Description: Web App ALB DNS Name 
+    Value:
+      Fn::Join:
+        - ''
+        - - "http://"
+          - Fn::GetAtt: WebAppALB.DNSName
+  RDSDNS:
+    Description: RDS DNS Name
+    Value: !GetAtt DBInstance.Endpoint.Address

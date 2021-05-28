@@ -1,0 +1,10 @@
+[
+ {
+     "ParameterKey":"MasterUserPassword",
+     "ParameterValue":"test123"
+ },
+ {
+    "ParameterKey":"MasterUsername",
+    "ParameterValue":"admin"
+ }
+]
